@@ -1,5 +1,7 @@
 # pi-mono
 
+> **AI disclosure:** AI tools were used to assist with code and documentation in this repository. The maintainer reviews changes and is responsible for the project.
+
 A Bun workspaces monorepo of independently published extensions for the
 [pi coding agent](https://pi.dev/).
 
