@@ -1,5 +1,6 @@
 {
 	"name": "@karlis-vagalis/pi-mono",
+	"description": "Extensions for the Pi coding agent.",
 	"private": true,
 	"type": "module",
 	"packageManager": "bun@1.3.10",
@@ -7,6 +8,11 @@
 	"workspaces": [
 		"extensions/*"
 	],
+	"pi": {
+		"extensions": [
+			"./extensions/*/src/index.ts"
+		]
+	},
 	"engines": {
 		"node": ">=22.12",
 		"bun": ">=1.3.10"

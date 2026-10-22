@@ -10,6 +10,33 @@ version-set:
     done
     bun install --lockfile-only --ignore-scripts
 
+# Check, stamp, build, pack, reset, then publish every public workspace with npm.
+publish:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    bun run check
+    packages="$(mktemp -d)"
+    reset=true
+    trap 'if $reset; then just version-reset; fi; rm -rf "$packages"' EXIT
+    just version-set
+    bun run build
+    for manifest in extensions/*/package.json; do
+        if bun -e 'process.exit((await Bun.file(process.argv[1]).json()).private === true ? 0 : 1)' "$manifest"; then
+            continue
+        fi
+        (cd "$(dirname "$manifest")" && bun pm pack --ignore-scripts --destination "$packages")
+    done
+    just version-reset
+    reset=false
+    for tarball in "$packages"/*.tgz; do
+        version="$(tar -xOf "$tarball" package/package.json | bun -e 'console.log((await Bun.stdin.json()).version)')"
+        dist_tag=latest
+        if [[ "$version" == *-* ]]; then
+            dist_tag=next
+        fi
+        npm publish "$tarball" --access public --ignore-scripts --tag "$dist_tag"
+    done
+
 # Reset manifests and the workspace lockfile after building/packing.
 version-reset:
     for manifest in extensions/*/package.json; do (cd "$(dirname "$manifest")" && bun pm pkg set "version={{ placeholder_version }}"); done

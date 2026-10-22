@@ -2,106 +2,92 @@
 
 > **AI disclosure:** AI tools were used to assist with code and documentation in this repository. The maintainer reviews changes and is responsible for the project.
 
-A Bun workspaces monorepo of independently published extensions for the
-[pi coding agent](https://pi.dev/).
+Extensions for the [Pi coding agent](https://pi.dev/). Install the collection
+from GitHub, or choose individual packages from npm.
 
-The root is private and is never published. Each directory under `extensions/`
-is a separate npm package with its own manifest, runtime dependencies,
-Pi entry point, and release lifecycle. Source versions stay at `0.0.0`; release
-versions come from repository-wide `v*` Git tags.
+## Extensions
 
-## Packages
+| Extension                           | What it adds                                    | npm package                |
+| ----------------------------------- | ----------------------------------------------- | -------------------------- |
+| [Flare](extensions/flare/README.md) | Create and run local web apps from a Pi session | `@karlis-vagalis/pi-flare` |
 
-| Workspace          | npm package                | Documentation                       |
-| ------------------ | -------------------------- | ----------------------------------- |
-| `extensions/flare` | `@karlis-vagalis/pi-flare` | [Flare](extensions/flare/README.md) |
+Flare is the first extension here. More can be added without changing how you
+install the repository.
 
-Only Flare has been extracted from pi-lib. Its `/flare` command, `flare_*` tools,
-`PI_FLARE_*` variables, ports, existing app data, and backups are unchanged.
+## Install
 
-## Development
-
-Use Bun 1.3.10+ and Node.js 22.12+:
+To install everything in this repository:
 
 ```bash
+pi install git:github.com/karlis-vagalis/pi-mono
+```
+
+Pi loads the extension paths declared in the root `package.json`; a Git install
+does not need a build step. Check each extension's README for any external
+requirements.
+
+Individual npm packages are available after their first release. For Flare:
+
+```bash
+pi install npm:@karlis-vagalis/pi-flare
+```
+
+Choose the repository or individual packages, not both, to avoid loading an
+extension twice. Run `/reload` after installing into an existing Pi session.
+
+## Work on the code
+
+You'll need Bun 1.3.10+ and Node.js 22.12+.
+
+```bash
+git clone https://github.com/karlis-vagalis/pi-mono.git
+cd pi-mono
 bun install
-bun run check       # Biome, then every workspace's typecheck and tests
-bun run build       # build every workspace with Rslib / Rspack
-bun run smoke       # integration checks; Flare requires celld + esbuild
-bun run pack:check  # inspect every package's publishable files
-```
-
-A single `bun.lock` tracks the workspace. Biome is the only linter and formatter;
-its configuration, TypeScript defaults, and development dependencies are shared
-at the root. Runtime dependencies belong to the package that imports them.
-
-To work on one extension:
-
-```bash
-bun run --filter @karlis-vagalis/pi-flare build
-bun run --filter @karlis-vagalis/pi-flare dev
-bun run --filter @karlis-vagalis/pi-flare test
-```
-
-After building, install the **package directory**, not the monorepo root:
-
-```bash
-pi install ./extensions/flare
-```
-
-See [Flare's readme](extensions/flare/README.md) for external requirements and
-switching from the copy previously bundled in pi-lib.
-
-## Independent releases
-
-Packages are published separately, with versions derived from repository-wide
-`v*` tags. Keep `0.0.0` in source control. The `justfile` has only two recipes:
-- `just version-set`: strip `v` from the nearest reachable tag; transform
-  `v1.2.3-4-gabc1234` into `1.2.3-post.4+abc1234`.
-- `just version-reset`: restore every workspace version to the
-  `placeholder_version` variable (`0.0.0`).
-
-Both recipes synchronize `bun.lock`. Setting requires a reachable tag such as
-`v1.2.3`; resetting does not require Git history. `-post` is valid SemVer but sorts
-as a prerelease before its base release.
-
-Build and pack **between** setting and resetting:
-
-```bash
 bun run check
-just version-set
-trap 'just version-reset' EXIT
 bun run build
-bun run --filter @karlis-vagalis/pi-flare smoke
-(cd extensions/flare && bun pm pack --destination /tmp)
-just version-reset
-trap - EXIT
 ```
 
-Pack or publish before resetting: the built JavaScript does not contain a separate
-package manifest, but a packed tarball retains its stamped version. To publish
-directly, run `bun publish --access public` from the package directory while its
-version is set. Authenticate to npm for `@karlis-vagalis` first. The package's
-`prepack` hook checks and rebuilds it; no automatic publishing workflow is
-configured.
+To try your checkout in Pi:
 
-## Adding an extension
+```bash
+pi install .
+```
 
-Create `extensions/<name>/` with:
-- A `package.json` named `@karlis-vagalis/pi-<name>`, version `0.0.0`,
-  `pi.extensions` entry, explicit publishable `files`, and public
-  `publishConfig.access`.
-- `src/`, an Rslib config, and a `tsconfig.json` extending
-  `../../tsconfig.base.json`.
-- `build`, `typecheck`, `test`, and `prepack` scripts, plus optional `dev`,
-  `smoke`, and `pack:check` scripts.
-- A readme and a copy of the MIT license for the npm tarball.
+The repository uses Bun workspaces. Each extension lives under `extensions/`
+and has its own npm package. Biome handles linting and formatting; Rslib builds
+the JavaScript shipped to npm.
 
-Add runtime dependencies inside that workspace with `bun add`; add shared
-development tools from the root with `bun add --dev`. Declare host-provided Pi
-packages and TypeBox as `"*"` peers rather than runtime dependencies. Run
-`bun install` from the root to update the workspace lockfile.
+Some useful commands:
+
+```bash
+bun run format
+bun run --filter @karlis-vagalis/pi-flare dev
+bun run smoke       # requires Flare's celld and esbuild tools
+bun run pack:check  # show what each npm package will contain
+```
+
+When adding an extension, give it a `src/index.ts` entry point, its own package
+manifest and README, and a copy of the MIT license. Keep runtime dependencies
+with the extension and shared development tools at the root.
+
+## Releases
+
+All extension packages are versioned together. Pushing a tag such as `v1.2.3`
+makes GitHub Actions set every package to `1.2.3`, run checks, build, and publish
+each package to npm. Ordinary commits and pull requests do not publish anything.
+
+Package versions stay at `0.0.0` in the source tree. To publish locally with npm:
+
+```bash
+just publish
+```
+
+This checks the code, sets every extension's version from Git, builds and packs
+them, resets the source versions, then publishes the tarballs. It uses your local
+npm credentials. The `version-set` and `version-reset` recipes are also available
+separately. Between tags, versions such as `1.2.3-post.4+abc1234` go to npm's
+`next` tag rather than `latest`.
 
 ## License
 
-[MIT](LICENSE) © 2026 Kārlis Vagalis.
+[MIT](LICENSE)
