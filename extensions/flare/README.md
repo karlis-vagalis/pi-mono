@@ -430,7 +430,7 @@ built files, not TypeScript source. Changes to tool definitions still need Pi's
 
 Keep the source version at `0.0.0`. From the monorepo root, use
 `just version-set` to derive a version from `v*` Git tags, build and pack or publish,
-then run `just version-reset`. See the [root release workflow](../../readme.md#independent-releases)
+then run `just version-reset`. See the [root release workflow](../../README.md#independent-releases)
 for the two recipes and failure-safe reset example.
 
 An exact `v1.2.3` tag becomes `1.2.3`; four commits later the version is

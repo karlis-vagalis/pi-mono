@@ -12,7 +12,7 @@ versions come from repository-wide `v*` Git tags.
 
 | Workspace          | npm package                | Documentation                       |
 | ------------------ | -------------------------- | ----------------------------------- |
-| `extensions/flare` | `@karlis-vagalis/pi-flare` | [Flare](extensions/flare/readme.md) |
+| `extensions/flare` | `@karlis-vagalis/pi-flare` | [Flare](extensions/flare/README.md) |
 
 Only Flare has been extracted from pi-lib. Its `/flare` command, `flare_*` tools,
 `PI_FLARE_*` variables, ports, existing app data, and backups are unchanged.
@@ -47,7 +47,7 @@ After building, install the **package directory**, not the monorepo root:
 pi install ./extensions/flare
 ```
 
-See [Flare's readme](extensions/flare/readme.md) for external requirements and
+See [Flare's readme](extensions/flare/README.md) for external requirements and
 switching from the copy previously bundled in pi-lib.
 
 ## Independent releases
