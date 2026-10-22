@@ -107,5 +107,5 @@ jobs:
               404) ;;
               *) echo "Registry lookup failed ($status): $name@$version" >&2; exit 1 ;;
             esac
-            npm publish "$tarball" --access public --provenance --ignore-scripts --tag "$dist_tag"
+            npm publish "./$tarball" --access public --provenance --ignore-scripts --tag "$dist_tag"
           done
