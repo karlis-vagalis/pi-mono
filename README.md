@@ -7,9 +7,9 @@ from GitHub, or choose individual packages from npm.
 
 ## Extensions
 
-| Extension                           | What it adds                                    | npm package                |
-| ----------------------------------- | ----------------------------------------------- | -------------------------- |
-| [Flare](extensions/flare/README.md) | Create and run local web apps from a Pi session | `@karlis-vagalis/pi-flare` |
+| Extension                           | What it adds                                                    | npm package                |
+| ----------------------------------- | --------------------------------------------------------------- | -------------------------- |
+| [Flare](extensions/flare/README.md) | Build small apps or share HTML pages and reports in the browser | `@karlis-vagalis/pi-flare` |
 
 Flare is the first extension here. More can be added without changing how you
 install the repository.

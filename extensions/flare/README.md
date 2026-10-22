@@ -1,13 +1,16 @@
 # pi-flare
 
-Create and run local web apps from your [Pi](https://pi.dev/) session.
+Small web apps and static artifacts, straight from your [Pi](https://pi.dev/) session.
 
-Flare gives Pi tools to create websites and small apps, then serves them through
-a shared [celld](https://celld.dev/) runtime. Apps are ordinary files: you or the
-agent can edit them, and the changes go live without a deployment step.
+Flare gives the agent a place to serve small apps, HTML pages, reports, and
+previews, so it can hand you a URL to open in your browser.
 
-Use a static app for a page, a Worker for a backend, or a durable app when you
-need saved state.
+It runs locally on [celld](https://celld.dev/), borrowing ideas from Cloudflare
+Workers, Durable Objects, and Wrangler. Use static hosting for artifacts, a
+Worker for backend code, or a durable app for saved state. Edit the files
+directly; changes go live without a deployment step.
+
+If needed, you can later adapt an app for Cloudflare or another host.
 
 ## Requirements
 
@@ -26,7 +29,7 @@ Install from the [pi-mono repository](https://github.com/karlis-vagalis/pi-mono)
 pi install git:github.com/karlis-vagalis/pi-mono
 ```
 
-To install only Flare from npm, once it has been published:
+To install only Flare from npm:
 
 ```bash
 pi install npm:@karlis-vagalis/pi-flare
@@ -41,6 +44,10 @@ Run `/flare` to start the runtime and see your apps. You can then ask Pi to buil
 something:
 
 > Create a small counter app with Flare. Save the count so it survives restarts.
+
+Or ask for a static artifact:
+
+> Turn this analysis into an HTML report and host it with Flare so I can view it in my browser.
 
 Open [127.0.0.1:53762](http://127.0.0.1:53762/) to browse your apps. Source files
 live under `~/.pi/flare/<app-id>/`. Static file edits are served immediately;
@@ -68,9 +75,28 @@ Backups go to `~/.pi/flare-backups` and are not pruned automatically.
 - `/flare restore <backup>` restores all apps and durable data, after saving a
   recovery backup of the current state.
 
-Set `PI_FLARE_HOME` to change the app directory, or `PI_FLARE_BACKUP_DIR` to change
-the backup location. See the [reference](docs/runtime.md) for all settings,
-routing examples, backup details, and runtime limits.
+### Environment variables
+
+Set these before starting Pi. Sessions sharing a runtime must use the same settings.
+
+| Variable                         | Default                    | What it changes                                                                                           |
+| -------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `PI_FLARE_HOME`                  | `~/.pi/flare`              | Where app files, durable data, and runtime files are stored.                                              |
+| `PI_FLARE_HOST`                  | `127.0.0.1`                | IPv4 or IPv6 address the app server listens on.                                                           |
+| `PI_FLARE_PORT`                  | `53762`                    | Port used to serve apps and the app directory.                                                            |
+| `PI_FLARE_CONTROL_PORT`          | `53763`                    | Private manager port, always bound to `127.0.0.1`.                                                        |
+| `PI_FLARE_PUBLIC_URL`            | Derived from host and port | Base URL returned by the tools, for example when using a reverse proxy. Does not change the bind address. |
+| `PI_FLARE_BACKUP_DIR`            | `~/.pi/flare-backups`      | Where backups are saved. Must be outside the app home, including through symlinks.                        |
+| `PI_FLARE_BACKUP_INTERVAL_HOURS` | `12`                       | Hours between scheduled backups. Must be positive; fractions such as `0.5` work.                          |
+| `PI_FLARE_CELLD`                 | `celld`                    | Command or executable path used to start celld.                                                           |
+| `CELLD_ESBUILD`                  | `esbuild`                  | Command or executable path used to bundle Worker code.                                                    |
+
+The two ports must be different and between `1024` and `65535`. Stop all sessions
+using the shared runtime before changing its environment, then start Pi again.
+For a separate app home, choose separate public and control ports too.
+
+See the [reference](docs/runtime.md) for routing examples, backup details, and
+runtime limits.
 
 ## Local use
 
