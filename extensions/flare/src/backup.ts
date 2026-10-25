@@ -3,9 +3,11 @@ import { createHash, randomUUID } from "node:crypto";
 import {
 	copyFile,
 	cp,
+	lstat,
 	mkdir,
 	open,
 	readdir,
+	readFile,
 	realpath,
 	rename,
 	rm,
@@ -13,7 +15,12 @@ import {
 } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
-import { type BackupSettings, containsPath } from "./schema.ts";
+import {
+	type BackupInfo,
+	type BackupSettings,
+	containsPath,
+	message,
+} from "./schema.ts";
 import { appIds } from "./storage.ts";
 
 export const SnapshotTimeSchema = z
@@ -21,6 +28,11 @@ export const SnapshotTimeSchema = z
 	.regex(/^backup-\d+-[a-f0-9-]{36}$/)
 	.transform((name) => Number(name.split("-")[1]))
 	.pipe(z.number().int().nonnegative());
+export const BackupMetadataSchema = z.object({
+	version: z.union([z.literal(1), z.literal(2)]),
+	root: z.string(),
+	completedAt: z.number().int().nonnegative(),
+});
 const sqliteHeader = Buffer.from("SQLite format 3\0");
 
 export function backupRoot(settings: BackupSettings) {
@@ -47,6 +59,45 @@ async function latestBackup(settings: BackupSettings) {
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
 		return undefined;
+	}
+}
+
+async function pruneBackups(settings: BackupSettings, newest: BackupInfo) {
+	if (settings.backupKeep === 0) return;
+	const base = backupRoot(settings);
+	const previous: BackupInfo[] = [];
+	for (const entry of await readdir(base, { withFileTypes: true })) {
+		const time = SnapshotTimeSchema.safeParse(entry.name);
+		if (!entry.isDirectory() || !time.success) continue;
+		const path = resolve(base, entry.name);
+		if (path === newest.path) continue;
+		try {
+			const metadataPath = resolve(path, "backup.json");
+			if (!(await lstat(metadataPath)).isFile()) continue;
+			const metadata = BackupMetadataSchema.safeParse(
+				JSON.parse(await readFile(metadataPath, "utf8")),
+			);
+			if (
+				metadata.success &&
+				metadata.data.root === settings.root &&
+				metadata.data.completedAt === time.data
+			)
+				previous.push({ path, completedAt: metadata.data.completedAt });
+		} catch (error) {
+			if (
+				!(error instanceof SyntaxError) &&
+				(error as NodeJS.ErrnoException).code !== "ENOENT"
+			)
+				throw error;
+		}
+	}
+	previous.sort(
+		(a, b) => b.completedAt - a.completedAt || b.path.localeCompare(a.path),
+	);
+	// Always keep the just-completed backup, including if the clock moved backward.
+	for (const snapshot of previous.slice(settings.backupKeep - 1)) {
+		await rm(snapshot.path, { recursive: true, force: true });
+		console.log(`FLARE_BACKUP_PRUNE ${snapshot.path}`);
 	}
 }
 
@@ -124,6 +175,12 @@ export async function createBackup(settings: BackupSettings) {
 		// Only a completely written snapshot becomes visible to the scheduler.
 		await rename(temporary, path);
 		console.log(`FLARE_BACKUP ${path}`);
+		try {
+			await pruneBackups(settings, { path, completedAt });
+		} catch (error) {
+			// A cleanup failure must not invalidate a completed recovery snapshot.
+			console.error(`Flare backup retention: ${message(error)}`);
+		}
 		return { path, completedAt };
 	} finally {
 		await rm(temporary, { recursive: true, force: true });

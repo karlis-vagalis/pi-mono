@@ -19,6 +19,7 @@ describe("Flare configuration", () => {
 		);
 		expect(service).toBe("pi-flare");
 		expect<number>(settings.backupIntervalMs).toBe(12 * 60 * 60 * 1000);
+		expect(settings.backupKeep).toBe(0);
 	});
 
 	test("parses ports and fractional backup hours", () => {
@@ -28,6 +29,23 @@ describe("Flare configuration", () => {
 		});
 		expect(settings.port).toBe(54000);
 		expect<number>(settings.backupIntervalMs).toBe(1_800_000);
+	});
+
+	test("parses backup retention counts with zero meaning unlimited", () => {
+		expect(ConfigSchema.parse({ backupKeep: "1" }).backupKeep).toBe(1);
+		expect(ConfigSchema.parse({ backupKeep: "3" }).backupKeep).toBe(3);
+		expect(ConfigSchema.parse({ backupKeep: "0" }).backupKeep).toBe(0);
+	});
+
+	test("rejects invalid backup retention counts", () => {
+		for (const backupKeep of [
+			-1,
+			1.5,
+			"invalid",
+			Infinity,
+			Number.MAX_SAFE_INTEGER + 1,
+		])
+			expect(() => ConfigSchema.parse({ backupKeep })).toThrow();
 	});
 
 	test("rejects conflicting ports and backups inside the home", () => {

@@ -142,6 +142,7 @@ export const HealthSchema = z.object({
 	leases: z.number().int().nonnegative(),
 	backupDirectory: z.string().optional(),
 	backupIntervalMs: z.number().int().positive().optional(),
+	backupKeep: z.number().int().nonnegative().optional(),
 	reloadError: z.string().optional(),
 });
 const port = z.coerce.number().int().min(1024).max(65535);
@@ -173,6 +174,7 @@ export const ConfigSchema = z
 			.min(1)
 			.default(defaultBackupDirectory)
 			.transform((value) => resolve(value)),
+		backupKeep: z.coerce.number().int().nonnegative().default(0),
 		// Parse hours at the environment boundary; scheduling uses milliseconds.
 		backupIntervalHours: z.coerce
 			.number()
@@ -201,6 +203,7 @@ export const config = ConfigSchema.parse({
 	controlPort: process.env.PI_FLARE_CONTROL_PORT,
 	publicUrl: process.env.PI_FLARE_PUBLIC_URL,
 	backupDirectory: process.env.PI_FLARE_BACKUP_DIR,
+	backupKeep: process.env.PI_FLARE_BACKUP_KEEP,
 	backupIntervalHours: process.env.PI_FLARE_BACKUP_INTERVAL_HOURS,
 });
 export const BackupInfoSchema = z.object({
@@ -217,7 +220,7 @@ export const RestoreInfoSchema = z.object({
 });
 export type BackupSettings = Pick<
 	typeof config,
-	"root" | "backupDirectory" | "backupIntervalMs"
+	"root" | "backupDirectory" | "backupIntervalMs" | "backupKeep"
 >;
 export const controlUrl = `http://127.0.0.1:${config.controlPort}`;
 const connectAddress =

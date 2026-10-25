@@ -72,7 +72,8 @@ async function probe(secret: string) {
 		(health.backupDirectory ?? defaultBackupDirectory) !==
 			config.backupDirectory ||
 		(health.backupIntervalMs ?? defaultBackupIntervalMs) !==
-			config.backupIntervalMs
+			config.backupIntervalMs ||
+		(health.backupKeep ?? 0) !== config.backupKeep
 	)
 		throw new Error(
 			"Another Flare configuration owns this control port; use matching settings or different ports",

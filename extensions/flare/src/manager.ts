@@ -408,6 +408,7 @@ api.get("/health", (c) =>
 				leases: leases.size,
 				backupDirectory: config.backupDirectory,
 				backupIntervalMs: config.backupIntervalMs,
+				backupKeep: config.backupKeep,
 				...(reloadError ? { reloadError } : {}),
 			})
 		: c.text("Starting", 503),

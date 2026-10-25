@@ -70,7 +70,15 @@ state remain on disk.
 ## Backups and settings
 
 Flare backs up app files and durable data every 12 hours while it is running.
-Backups go to `~/.pi/flare-backups` and are not pruned automatically.
+Backups go to `~/.pi/flare-backups`. By default, all backups are kept. To keep only
+the newest completed backup for each Flare home:
+
+```bash
+PI_FLARE_BACKUP_KEEP=1 pi
+```
+
+Older backups are pruned only after a new backup succeeds. The limit applies to
+scheduled backups, manual backups, and restore recovery snapshots.
 - `/flare backup` makes a backup now.
 - `/flare restore <backup>` restores all apps and durable data, after saving a
   recovery backup of the current state.
@@ -88,6 +96,7 @@ Set these before starting Pi. Sessions sharing a runtime must use the same setti
 | `PI_FLARE_PUBLIC_URL`            | Derived from host and port | Base URL returned by the tools, for example when using a reverse proxy. Does not change the bind address. |
 | `PI_FLARE_BACKUP_DIR`            | `~/.pi/flare-backups`      | Where backups are saved. Must be outside the app home, including through symlinks.                        |
 | `PI_FLARE_BACKUP_INTERVAL_HOURS` | `12`                       | Hours between scheduled backups. Must be positive; fractions such as `0.5` work.                          |
+| `PI_FLARE_BACKUP_KEEP`           | `0` (unlimited)            | Number of completed backups to keep per Flare home. Set to `1` to keep only the latest.                   |
 | `PI_FLARE_CELLD`                 | `celld`                    | Command or executable path used to start celld.                                                           |
 | `CELLD_ESBUILD`                  | `esbuild`                  | Command or executable path used to bundle Worker code.                                                    |
 

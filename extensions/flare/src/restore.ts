@@ -10,16 +10,14 @@ import {
 	stat,
 } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
-import { z } from "zod";
-import { backupRoot, createBackup, SnapshotTimeSchema } from "./backup.ts";
+import {
+	BackupMetadataSchema,
+	backupRoot,
+	createBackup,
+	SnapshotTimeSchema,
+} from "./backup.ts";
 import type { BackupSettings } from "./schema.ts";
 import { appIds } from "./storage.ts";
-
-const MetadataSchema = z.object({
-	version: z.union([z.literal(1), z.literal(2)]),
-	root: z.string(),
-	completedAt: z.number().int().nonnegative(),
-});
 
 // Only this parser constructs a restore source, confined to this home's backups.
 export async function readBackup(settings: BackupSettings, name: string) {
@@ -30,7 +28,7 @@ export async function readBackup(settings: BackupSettings, name: string) {
 		!SnapshotTimeSchema.safeParse(basename(path)).success
 	)
 		throw new Error("Choose a backup from this Flare home's backup directory");
-	const metadata = MetadataSchema.parse(
+	const metadata = BackupMetadataSchema.parse(
 		JSON.parse(await readFile(resolve(path, "backup.json"), "utf8")),
 	);
 	if (metadata.root !== settings.root)
@@ -106,6 +104,7 @@ export async function restoreBackup(
 		for (const app of source.apps)
 			await cp(app.path, resolve(staging, "incoming", app.id), options);
 		await cp(source.state, resolve(staging, "state"), options);
+		// The selected backup is fully staged before retention can prune it.
 		// Do not touch live data unless its recovery snapshot has succeeded.
 		const recovery = await createBackup(settings);
 		for (const replacement of replacements) {

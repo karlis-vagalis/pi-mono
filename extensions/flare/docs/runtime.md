@@ -98,8 +98,20 @@ Backups are private, timestamped directories grouped by a hash of the Flare home
 SQLite databases are snapshotted through SQLite, including committed WAL data;
 raw live database files and their transient WAL/SHM/journal sidecars are not copied.
 Snapshots are published only after all files have been written. Credentials,
-leases, logs, and generated runtime code are excluded. Old backups are **never
-pruned automatically**; monitor disk usage and remove snapshots you no longer need.
+leases, logs, and generated runtime code are excluded. Backups are kept indefinitely
+by default. Set `PI_FLARE_BACKUP_KEEP` to the number of completed backups to keep
+per Flare home: `1` keeps only the latest; `0` (the default) keeps all of them.
+
+```bash
+PI_FLARE_BACKUP_KEEP=1 pi
+```
+
+Retention runs only after a new backup is fully written and published. It applies
+to scheduled backups, `/flare backup`, and recovery snapshots made by restore.
+Existing backups are not pruned if the new snapshot fails. Lowering the limit
+takes effect at the next successful backup; use `/flare backup` to apply it now.
+Incomplete or unrecognized snapshots, symlinks, and backups from other homes are
+left alone. Cleanup errors are logged without invalidating the new backup.
 A local backup protects against accidental changes, not loss of the whole disk;
 choose another disk or a backed-up mount for stronger protection.
 
@@ -133,7 +145,9 @@ state**, then replaces the app and durable-state trees rather than merging them
 with stale databases. A failed replacement attempts to roll back the old trees.
 The shared runtime restarts afterward, briefly interrupting every connected Flare
 session and any live WebSocket connections. The command reports the recovery
-snapshot, which can itself be restored to undo the operation.
+snapshot, which can itself be restored to undo the operation. Retention can prune
+the selected source backup after it has been copied into staging; with a limit
+of `1`, the new recovery snapshot is the one kept.
 
 The manager token, configuration, and unrelated root directories stay unchanged.
 A restored app cannot overwrite an unrelated directory with the same name.
@@ -297,17 +311,18 @@ migration for version-numbered development managers is included.
 Set these variables before starting Pi. Connected instances must use the same
 settings; mismatches fail without killing an existing process.
 
-| Variable                         | Default                                                   |
-| -------------------------------- | --------------------------------------------------------- |
-| `PI_FLARE_HOME`                  | `~/.pi/flare`                                             |
-| `PI_FLARE_HOST`                  | `127.0.0.1` (public listener's IPv4 or IPv6 bind address) |
-| `PI_FLARE_PORT`                  | `53762`                                                   |
-| `PI_FLARE_CONTROL_PORT`          | `53763`                                                   |
-| `PI_FLARE_PUBLIC_URL`            | URL derived from the bind address and public port         |
-| `PI_FLARE_BACKUP_INTERVAL_HOURS` | `12` (positive hours; fractions supported)                |
-| `PI_FLARE_BACKUP_DIR`            | `~/.pi/flare-backups` (outside the live home)             |
-| `PI_FLARE_CELLD`                 | `celld`                                                   |
-| `CELLD_ESBUILD`                  | `esbuild`                                                 |
+| Variable                         | Default                                                     |
+| -------------------------------- | ----------------------------------------------------------- |
+| `PI_FLARE_HOME`                  | `~/.pi/flare`                                               |
+| `PI_FLARE_HOST`                  | `127.0.0.1` (public listener's IPv4 or IPv6 bind address)   |
+| `PI_FLARE_PORT`                  | `53762`                                                     |
+| `PI_FLARE_CONTROL_PORT`          | `53763`                                                     |
+| `PI_FLARE_PUBLIC_URL`            | URL derived from the bind address and public port           |
+| `PI_FLARE_BACKUP_INTERVAL_HOURS` | `12` (positive hours; fractions supported)                  |
+| `PI_FLARE_BACKUP_KEEP`           | `0` (unlimited; `1` keeps only the latest completed backup) |
+| `PI_FLARE_BACKUP_DIR`            | `~/.pi/flare-backups` (outside the live home)               |
+| `PI_FLARE_CELLD`                 | `celld`                                                     |
+| `CELLD_ESBUILD`                  | `esbuild`                                                   |
 
 `PI_FLARE_HOST` controls the public celld listener; the private control listener
 always stays on `127.0.0.1`. Wildcard addresses `0.0.0.0` and `::` advertise
