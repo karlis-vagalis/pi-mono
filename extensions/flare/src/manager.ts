@@ -72,10 +72,10 @@ let watcher: FSWatcher | undefined;
 let ready = false;
 let stopping = false;
 let finishing = false;
+let shutdownRequested = false;
 const backups = new Backups(config, mutate);
 let backupCheck: Promise<void> | undefined;
 const leases = new Map<LeaseId, number>();
-let idle: ReturnType<typeof setTimeout>;
 
 function mutate<T>(action: () => Promise<T>): Promise<T> {
 	const result = mutations.then(action);
@@ -324,6 +324,7 @@ callApi().catch(showError);
 async function refreshRuntime() {
 	const next = await signature();
 	if (
+		shutdownRequested ||
 		reloading ||
 		restoring ||
 		stopping ||
@@ -419,18 +420,26 @@ api.post("/restart", (c) => {
 });
 api.put("/lease/:id", (c) => {
 	leases.set(LeaseIdSchema.parse(c.req.param("id")), Date.now() + 15_000);
-	clearTimeout(idle);
 	return c.text("ok");
 });
 api.delete("/lease/:id", (c) => {
 	leases.delete(LeaseIdSchema.parse(c.req.param("id")));
-	if (leases.size === 0 && !stopping) idle = setTimeout(stop, 1500);
 	return c.text("ok");
 });
 api.use("*", async (c, next) => {
-	if (stopping || reloading || restoring)
-		return c.text("Flare is refreshing or restoring; retry shortly", 503);
+	if (stopping || shutdownRequested || reloading || restoring)
+		return c.text(
+			"Flare is stopping, refreshing, or restoring; retry shortly",
+			503,
+		);
 	await next();
+});
+api.post("/stop", (c) => {
+	shutdownRequested = true;
+	ready = false;
+	// Let the response flush before closing the control listener.
+	setTimeout(stop, 100).unref();
+	return c.json({ stopping: true }, 202);
 });
 api.post("/backup", async (c) =>
 	c.json(await mutate(() => createBackup(config))),
@@ -607,12 +616,16 @@ async function pauseChild() {
 	});
 }
 
+function shutdown() {
+	shutdownRequested = true;
+	stop();
+}
+
 function stop() {
 	if (stopping) return;
 	stopping = true;
 	ready = false;
 	void watcher?.close();
-	clearTimeout(idle);
 	for (const timer of debounce.values()) clearTimeout(timer);
 	// Keep the authenticated control listener bound until celld releases its
 	// public port and SQLite handles. Other Pi clients must not start early.
@@ -637,7 +650,8 @@ async function finish(code: number) {
 	// cleaned up, so the next manager cannot overlap it during a refresh.
 	await backups.wait().catch(() => {});
 	await mutations;
-	if (reloading && code === 0) {
+	const restart = reloading && !shutdownRequested && code === 0;
+	if (restart) {
 		const now = Date.now();
 		await atomic(
 			handoffPath,
@@ -648,7 +662,7 @@ async function finish(code: number) {
 	}
 	server.close();
 	if ("closeAllConnections" in server) server.closeAllConnections();
-	if (reloading && code === 0 && leases.size > 0) {
+	if (restart) {
 		const replacement = spawn("bun", [managerPath], {
 			stdio: ["ignore", "inherit", "inherit"],
 			detached: true,
@@ -675,17 +689,10 @@ async function start() {
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
 	}
-	idle = setTimeout(stop, 30_000);
 	setInterval(() => {
-		let expired = false;
 		for (const [id, expires] of leases) {
-			if (expires <= Date.now()) {
-				leases.delete(id);
-				expired = true;
-			}
+			if (expires <= Date.now()) leases.delete(id);
 		}
-		if (expired && leases.size === 0 && !stopping)
-			idle = setTimeout(stop, 1500);
 		if (ready && !stopping) {
 			void cleanup().catch((error) => console.error(error));
 			void checkSource();
@@ -811,5 +818,5 @@ server.on("error", (error: NodeJS.ErrnoException) => {
 	);
 	process.exit(error.code === "EADDRINUSE" ? 0 : 1);
 });
-process.on("SIGTERM", stop);
-process.on("SIGINT", stop);
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

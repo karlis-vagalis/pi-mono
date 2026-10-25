@@ -197,6 +197,12 @@ export default function (pi: ExtensionAPI) {
 		return starting;
 	}
 
+	async function disconnect(release = true) {
+		const current = connection;
+		connection = undefined;
+		await current?.close(release);
+	}
+
 	async function request<S extends z.ZodType>(
 		method: string,
 		path: string,
@@ -317,10 +323,58 @@ export default function (pi: ExtensionAPI) {
 
 	pi.registerCommand("flare", {
 		description:
-			"Show apps, create a backup, or restore one: /flare [backup | restore <name-or-path>]",
+			"Show apps, stop the runtime, back up, or restore: /flare [stop | backup | restore <name-or-path>]",
 		handler: async (args, ctx) => {
 			try {
 				const input = args.trim();
+				if (input === "stop") {
+					if (!ctx.isIdle())
+						throw new Error(
+							"Wait for the agent to finish before stopping Flare",
+						);
+					let secret: string;
+					try {
+						secret =
+							connection?.secret ??
+							TokenSchema.parse(await readFile(tokenPath, "utf8"));
+					} catch (error) {
+						if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+						if (ctx.hasUI) ctx.ui.notify("Flare is not running", "info");
+						return;
+					}
+					const current = await probe(secret);
+					if (current.kind === "missing") {
+						await disconnect(false);
+						if (ctx.hasUI) ctx.ui.notify("Flare is not running", "info");
+						return;
+					}
+					if (current.kind !== "ready")
+						throw new Error(
+							"Flare is starting, stopping, or refreshing; retry shortly",
+						);
+					if (
+						ctx.hasUI &&
+						!(await ctx.ui.confirm(
+							"Stop Flare?",
+							"Stop serving all apps and artifacts for every connected Pi session? Files and saved data will be kept.",
+						))
+					)
+						return;
+					const response = await fetch(`${controlUrl}/stop`, {
+						method: "POST",
+						headers: { authorization: `Bearer ${secret}` },
+						signal: AbortSignal.timeout(2000),
+					});
+					if (!response.ok) throw new Error(await response.text());
+					z.object({ stopping: z.literal(true) }).parse(await response.json());
+					await disconnect(false);
+					if (ctx.hasUI)
+						ctx.ui.notify(
+							"Flare is stopping. Your apps and data are kept; the next Flare command or tool call starts it again.",
+							"info",
+						);
+					return;
+				}
 				if (input === "backup") {
 					const snapshot = await request(
 						"POST",
@@ -370,7 +424,7 @@ export default function (pi: ExtensionAPI) {
 				}
 				if (input)
 					throw new Error(
-						"Usage: /flare [backup | restore <backup-name-or-path>]",
+						"Usage: /flare [stop | backup | restore <backup-name-or-path>]",
 					);
 				const apps = await request(
 					"GET",
@@ -402,8 +456,6 @@ export default function (pi: ExtensionAPI) {
 	});
 	pi.on("session_shutdown", async () => {
 		closed = true;
-		const current = connection;
-		connection = undefined;
-		await current?.close().catch(() => {});
+		await disconnect().catch(() => {});
 	});
 }

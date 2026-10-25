@@ -64,8 +64,10 @@ Pi gets five tools:
 | `flare_delete` | Remove its source files, keeping durable data      |
 
 Apps stay until you delete them unless you set a lifetime with `ttl_seconds`.
-The runtime stops when the last Pi session using it closes; app files and saved
-state remain on disk.
+Closing Pi does not stop Flare: apps and artifacts keep serving, and file watching
+and scheduled backups continue. Run `/flare stop` when you want to shut down the
+shared runtime. It keeps your files and data; the next Flare command or tool call
+starts it again.
 
 ## Backups and settings
 
@@ -100,8 +102,8 @@ Set these before starting Pi. Sessions sharing a runtime must use the same setti
 | `PI_FLARE_CELLD`                 | `celld`                    | Command or executable path used to start celld.                                                           |
 | `CELLD_ESBUILD`                  | `esbuild`                  | Command or executable path used to bundle Worker code.                                                    |
 
-The two ports must be different and between `1024` and `65535`. Stop all sessions
-using the shared runtime before changing its environment, then start Pi again.
+The two ports must be different and between `1024` and `65535`. Run `/flare stop`
+and close sessions using Flare before changing its environment, then start Pi again.
 For a separate app home, choose separate public and control ports too.
 
 See the [reference](docs/runtime.md) for routing examples, backup details, and
@@ -123,11 +125,7 @@ From the repository root:
 bun install
 bun run --filter @karlis-vagalis/pi-flare check
 bun run --filter @karlis-vagalis/pi-flare build
-bun run --filter @karlis-vagalis/pi-flare smoke
 ```
-
-The smoke check requires celld and esbuild. It uses temporary apps and ports,
-not your existing Flare data.
 
 Releases use the same version as the other extensions in this repository.
 Maintainers can publish all packages locally with `just publish` from the root,

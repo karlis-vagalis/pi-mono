@@ -62,7 +62,6 @@ Some useful commands:
 ```bash
 bun run format
 bun run --filter @karlis-vagalis/pi-flare dev
-bun run smoke       # requires Flare's celld and esbuild tools
 bun run pack:check  # show what each npm package will contain
 ```
 

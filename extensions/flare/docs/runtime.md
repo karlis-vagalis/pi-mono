@@ -280,10 +280,17 @@ recreating the same directory ID and manifest can reuse it.
 
 The runtime starts lazily on `/flare` or the first Flare tool call. Each Pi instance
 that uses Flare renews a short-lived lease with one manager. Concurrent starts
-race for its control port; only the winner starts celld. Closing one Pi does not
-stop the others. About 1.5 seconds after the last session releases its lease,
-the manager stops celld and its watcher. After an unexpected Pi exit, its lease
-expires within 15 seconds. A new session can restart with persisted data intact.
+race for its control port; only the winner starts celld. Closing Pi, including the
+last connected session, does not stop the runtime. Apps and artifacts stay
+available, file watching continues, and scheduled backups keep running. After an
+unexpected Pi exit, its lease expires within 15 seconds without affecting serving.
+
+Run `/flare stop` to shut down the shared manager and celld for all sessions.
+Interactive sessions ask for confirmation, and the current agent must be idle.
+App files, durable data, and backups are retained. The next Flare command or tool
+call starts the runtime again. Stopping an already-stopped runtime does not start
+it just to stop it. Flare does not install a system service or start itself after
+a machine reboot; start it from Pi again when needed.
 
 ### Automatic extension refresh
 
@@ -293,7 +300,8 @@ It waits for pending writes/builds and celld shutdown before handing off the
 control port. Active session leases are transferred through a private temporary
 file, so multiple Pi instances stay attached without competing restarts. App
 source and durable databases are retained; the manager rebuilds apps from disk.
-There can be a brief interruption to requests and live WebSocket connections.
+Refresh also works when no Pi sessions are connected. There can be a brief
+interruption to requests and live WebSocket connections.
 
 Invalid extension syntax leaves the current runtime serving; `/health` reports
 `reloadError` and `runtime.log` records the failure. Fixing the source retries
@@ -337,7 +345,9 @@ Binding to a non-loopback address exposes the app directory and all apps to the
 network **without browser authentication**. Use trusted networks or an
 authenticated reverse proxy. `PI_FLARE_PUBLIC_URL` changes returned URLs only;
 it does not create a proxy or change the bind address. Environment changes require
-a fresh shared runtime; automatic source refresh preserves its launch environment.
+a fresh shared runtime; run `/flare stop` and close sessions using Flare before
+starting Pi with new settings. Automatic source refresh preserves the runtime's
+launch environment.
 For another independent Flare home, choose different public and control ports too.
 Inspect `runtime.log`
 for startup, Worker, build, backup, restore, and automatic refresh errors. Runtime source updates

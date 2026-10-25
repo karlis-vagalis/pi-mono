@@ -23,7 +23,6 @@
 		"test": "bun run --workspaces --if-present test",
 		"build": "bun run --workspaces --if-present build",
 		"dev": "bun run --workspaces --if-present dev",
-		"smoke": "bun run --workspaces --if-present smoke",
 		"pack:check": "bun run --workspaces --if-present pack:check",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
