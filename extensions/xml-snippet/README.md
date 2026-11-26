@@ -1,6 +1,8 @@
 # XML Snippet
 
-Type `<context` and accept the completion. Pi inserts `<context>` and `</context>` on separate lines and places the cursor on the blank line between them.
+Type `<context` and press Tab to accept the completion. Pi inserts `<context>` and `</context>` on separate lines and places the cursor on the blank line between them.
+
+![Typing <context in Pi, accepting the tag pair with Tab, and filling in the blank line](demo/xml-snippet.gif)
 
 ## Install
 
