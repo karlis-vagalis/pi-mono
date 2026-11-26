@@ -15,6 +15,14 @@
         "typescript": "^7.0.2",
       },
     },
+    "extensions/art-styles": {
+      "name": "@karlis-vagalis/pi-art-styles",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
+        "typebox": "*",
+      },
+    },
     "extensions/delete-session": {
       "name": "@karlis-vagalis/pi-delete-session",
       "version": "0.0.0",
@@ -50,6 +58,14 @@
       "version": "0.0.0",
       "peerDependencies": {
         "@earendil-works/pi-coding-agent": "*",
+      },
+    },
+    "extensions/xml-snippet": {
+      "name": "@karlis-vagalis/pi-xml-snippet",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
+        "@earendil-works/pi-tui": "*",
       },
     },
   },
@@ -164,6 +180,8 @@
 
     "@hono/node-server": ["@hono/node-server@2.1.5", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q=="],
 
+    "@karlis-vagalis/pi-art-styles": ["@karlis-vagalis/pi-art-styles@workspace:extensions/art-styles"],
+
     "@karlis-vagalis/pi-delete-session": ["@karlis-vagalis/pi-delete-session@workspace:extensions/delete-session"],
 
     "@karlis-vagalis/pi-exit-session": ["@karlis-vagalis/pi-exit-session@workspace:extensions/exit-session"],
@@ -171,6 +189,8 @@
     "@karlis-vagalis/pi-flare": ["@karlis-vagalis/pi-flare@workspace:extensions/flare"],
 
     "@karlis-vagalis/pi-undo": ["@karlis-vagalis/pi-undo@workspace:extensions/undo"],
+
+    "@karlis-vagalis/pi-xml-snippet": ["@karlis-vagalis/pi-xml-snippet@workspace:extensions/xml-snippet"],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.6", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg=="],
 

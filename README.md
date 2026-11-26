@@ -13,6 +13,8 @@ from GitHub, or choose individual packages from npm.
 | [Undo](extensions/undo/README.md)                     | Restore the last user message to the editor with `/undo`        | `@karlis-vagalis/pi-undo`           |
 | [Exit Session](extensions/exit-session/README.md)     | Exit Pi with `/exit` or plain `exit`                            | `@karlis-vagalis/pi-exit-session`   |
 | [Delete Session](extensions/delete-session/README.md) | Delete the current session and start a fresh one with `/delete` | `@karlis-vagalis/pi-delete-session` |
+| [XML Snippet](extensions/xml-snippet/README.md)       | Expand a partial XML tag into a matching pair in the editor     | `@karlis-vagalis/pi-xml-snippet`    |
+| [Art Styles](extensions/art-styles/README.md)         | Generate random art-direction prompts with `random_style`       | `@karlis-vagalis/pi-art-styles`     |
 
 ## Install
 
