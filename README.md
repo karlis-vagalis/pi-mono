@@ -7,15 +7,16 @@ from GitHub, or choose individual packages from npm.
 
 ## Extensions
 
-| Extension                                               | What it adds                                                    | npm package                          |
-| ------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------ |
-| [Flare](extensions/flare/README.md)                     | Build small apps or share HTML pages and reports in the browser | `@karlis-vagalis/pi-flare`           |
-| [Undo](extensions/undo/README.md)                       | Restore the last user message to the editor with `/undo`        | `@karlis-vagalis/pi-undo`            |
-| [Exit Session](extensions/exit-session/README.md)       | Exit Pi with `/exit` or plain `exit`                            | `@karlis-vagalis/pi-exit-session`    |
-| [Delete Session](extensions/delete-session/README.md)   | Delete the current session and start a fresh one with `/delete` | `@karlis-vagalis/pi-delete-session`  |
-| [XML Snippet](extensions/xml-snippet/README.md)         | Expand a partial XML tag into a matching pair in the editor     | `@karlis-vagalis/pi-xml-snippet`     |
-| [Block Root Find](extensions/block-root-find/README.md) | Block accidental filesystem-wide `find` searches                | `@karlis-vagalis/pi-block-root-find` |
-| [Art Styles](extensions/art-styles/README.md)           | Generate random art-direction prompts with `random_style`       | `@karlis-vagalis/pi-art-styles`      |
+| Extension                                                   | What it adds                                                    | npm package                            |
+| ----------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------- |
+| [Flare](extensions/flare/README.md)                         | Build small apps or share HTML pages and reports in the browser | `@karlis-vagalis/pi-flare`             |
+| [Undo](extensions/undo/README.md)                           | Restore the last user message to the editor with `/undo`        | `@karlis-vagalis/pi-undo`              |
+| [Exit Session](extensions/exit-session/README.md)           | Exit Pi with `/exit` or plain `exit`                            | `@karlis-vagalis/pi-exit-session`      |
+| [Delete Session](extensions/delete-session/README.md)       | Delete the current session and start a fresh one with `/delete` | `@karlis-vagalis/pi-delete-session`    |
+| [XML Snippet](extensions/xml-snippet/README.md)             | Expand a partial XML tag into a matching pair in the editor     | `@karlis-vagalis/pi-xml-snippet`       |
+| [Block Root Find](extensions/block-root-find/README.md)     | Block accidental filesystem-wide `find` searches                | `@karlis-vagalis/pi-block-root-find`   |
+| [Indicator Maxxing](extensions/indicator-maxxing/README.md) | Animated working messages and custom spinners for Pi            | `@karlis-vagalis/pi-indicator-maxxing` |
+| [Art Styles](extensions/art-styles/README.md)               | Generate random art-direction prompts with `random_style`       | `@karlis-vagalis/pi-art-styles`        |
 
 ## Install
 
