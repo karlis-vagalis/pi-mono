@@ -23,6 +23,13 @@
         "typebox": "*",
       },
     },
+    "extensions/block-root-find": {
+      "name": "@karlis-vagalis/pi-block-root-find",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
+      },
+    },
     "extensions/delete-session": {
       "name": "@karlis-vagalis/pi-delete-session",
       "version": "0.0.0",
@@ -181,6 +188,8 @@
     "@hono/node-server": ["@hono/node-server@2.1.5", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q=="],
 
     "@karlis-vagalis/pi-art-styles": ["@karlis-vagalis/pi-art-styles@workspace:extensions/art-styles"],
+
+    "@karlis-vagalis/pi-block-root-find": ["@karlis-vagalis/pi-block-root-find@workspace:extensions/block-root-find"],
 
     "@karlis-vagalis/pi-delete-session": ["@karlis-vagalis/pi-delete-session@workspace:extensions/delete-session"],
 
