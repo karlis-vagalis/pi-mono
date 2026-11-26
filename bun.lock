@@ -15,9 +15,23 @@
         "typescript": "^7.0.2",
       },
     },
+    "extensions/delete-session": {
+      "name": "@karlis-vagalis/pi-delete-session",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
+      },
+    },
+    "extensions/exit-session": {
+      "name": "@karlis-vagalis/pi-exit-session",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
+      },
+    },
     "extensions/flare": {
       "name": "@karlis-vagalis/pi-flare",
-      "version": "0.1.0",
+      "version": "0.0.0",
       "dependencies": {
         "@faker-js/faker": "^10.6.0",
         "@hono/node-server": "^2.1.5",
@@ -29,6 +43,13 @@
         "@earendil-works/pi-ai": "*",
         "@earendil-works/pi-coding-agent": "*",
         "typebox": "*",
+      },
+    },
+    "extensions/undo": {
+      "name": "@karlis-vagalis/pi-undo",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "@earendil-works/pi-coding-agent": "*",
       },
     },
   },
@@ -143,7 +164,13 @@
 
     "@hono/node-server": ["@hono/node-server@2.1.5", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q=="],
 
+    "@karlis-vagalis/pi-delete-session": ["@karlis-vagalis/pi-delete-session@workspace:extensions/delete-session"],
+
+    "@karlis-vagalis/pi-exit-session": ["@karlis-vagalis/pi-exit-session@workspace:extensions/exit-session"],
+
     "@karlis-vagalis/pi-flare": ["@karlis-vagalis/pi-flare@workspace:extensions/flare"],
+
+    "@karlis-vagalis/pi-undo": ["@karlis-vagalis/pi-undo@workspace:extensions/undo"],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.6", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg=="],
 

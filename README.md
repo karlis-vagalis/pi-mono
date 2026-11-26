@@ -7,12 +7,12 @@ from GitHub, or choose individual packages from npm.
 
 ## Extensions
 
-| Extension                           | What it adds                                                    | npm package                |
-| ----------------------------------- | --------------------------------------------------------------- | -------------------------- |
-| [Flare](extensions/flare/README.md) | Build small apps or share HTML pages and reports in the browser | `@karlis-vagalis/pi-flare` |
-
-Flare is the first extension here. More can be added without changing how you
-install the repository.
+| Extension                                             | What it adds                                                    | npm package                         |
+| ----------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------- |
+| [Flare](extensions/flare/README.md)                   | Build small apps or share HTML pages and reports in the browser | `@karlis-vagalis/pi-flare`          |
+| [Undo](extensions/undo/README.md)                     | Restore the last user message to the editor with `/undo`        | `@karlis-vagalis/pi-undo`           |
+| [Exit Session](extensions/exit-session/README.md)     | Exit Pi with `/exit` or plain `exit`                            | `@karlis-vagalis/pi-exit-session`   |
+| [Delete Session](extensions/delete-session/README.md) | Delete the current session and start a fresh one with `/delete` | `@karlis-vagalis/pi-delete-session` |
 
 ## Install
 
