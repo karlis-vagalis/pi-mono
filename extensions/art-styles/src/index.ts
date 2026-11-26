@@ -12,9 +12,18 @@ export default function (pi: ExtensionAPI): void {
 		label: "Random Art Style",
 		description:
 			"Generate a fresh art-direction combination by randomly selecting style dimensions. Returns a compact prompt string.",
-		parameters: Type.Object({}),
-		async execute() {
-			const dimensions = [...STYLE_CATEGORIES];
+		parameters: Type.Object({
+			categories: Type.Optional(
+				Type.Array(Type.Enum(STYLE_CATEGORIES), {
+					minItems: 1,
+					uniqueItems: true,
+					description:
+						"Only draw from these categories. Choose categories relevant to the brief, or omit to draw from all categories.",
+				}),
+			),
+		}),
+		async execute(_id, { categories = STYLE_CATEGORIES }) {
+			const dimensions = [...categories];
 			const amount = Math.min(
 				2 + Math.floor(Math.random() * 4),
 				dimensions.length,
